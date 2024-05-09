@@ -5,9 +5,14 @@
 
 
 #include <cmath>
+#include <cstddef>
+#include <iostream>
 #include <limits>
 #include <numeric>
+#include <ostream>
 #include <stdexcept>
+#include <type_traits>
+#include <vector>
 template<typename T>
 class fraction_t{
 public:
@@ -15,6 +20,28 @@ public:
     T denominator   = 1;
 
 
+    
+    template<class...Va>
+    requires(std::is_same_v<Va, fraction_t<T>> && ... ) 
+    inline static void sameify(fraction_t<T>& first, Va&...rest){
+        size_t lcm = first.denominator;
+        ((lcm = std::lcm(lcm, rest.denominator)), ...);
+        fraction_t<T> lf(lcm, 1);
+        first*=lf;
+        (operator*=(rest,lf),...);
+        //first.reduce();
+        //(rest.reduce(), ...);
+    }
+
+
+    void expand(T t){
+        numerator*=t;
+        denominator*=t;
+    }
+
+    fraction_t<T> expand_copy(T t){
+        return {numerator*t, denominator*t};
+    }
     void reduce(){
         auto gcd = std::gcd(numerator, denominator);
         numerator = numerator/gcd;
@@ -59,15 +86,15 @@ public:
 
     friend fraction_t<T> operator*(const fraction_t<T>& a, const fraction_t<T>& b){
         return {
-            a.numerator*b.denominator*b.numerator*a.denominator,
+            a.numerator*b.numerator,
             a.denominator*b.denominator
         };
     }
 
     friend fraction_t<T> operator/(const fraction_t<T>& a, const fraction_t<T>& b){
         return {
-            a.numerator*b.denominator/b.numerator*a.denominator,
-            a.denominator*b.denominator
+            a.numerator*b.denominator,
+            a.denominator*b.numerator
         };
     }
 
@@ -84,15 +111,13 @@ public:
     }
 
     friend void operator*=(fraction_t<T>& a, const fraction_t<T>& b){
-        a.numerator*=b.denominator;
-        a.numerator*=(b.numerator*a.denominator);
+        a.numerator*=b.numerator;
         a.denominator*=b.denominator;
     }
 
     friend void operator/=(fraction_t<T>& a, const fraction_t<T>& b){
         a.numerator*=b.denominator;
-        a.numerator/=(b.numerator*a.denominator);
-        a.denominator*=b.denominator;
+        a.denominator*=b.numerator;
     }
 
     bool operator>=(fraction_t<T> compare)const{
@@ -128,6 +153,10 @@ public:
         reduce();
         numerator+=integral*denominator;
         reduce();
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const fraction_t<T>& f){
+        return os << f.numerator << '/' << f.denominator;
     }
 
     fraction_t(){}

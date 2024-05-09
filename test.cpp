@@ -4,8 +4,11 @@
 #include "fraction.hpp"
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 int main(){
-    double d = 0.24412389123891238912389;
-    fraction_t<unsigned long> f = d;
-    std::cout << std::setprecision(20) << (unsigned long) f.numerator << "/" << (unsigned long) f.denominator << " = " << f.to_double() << " = " << d << std::endl; 
+    fraction_t<long> a{5,2};
+    fraction_t<long> b{5,7};
+    fraction_t<long> c{7,6};
+    fraction_t<long>::sameify(a, b, c);
+    std::cout << a.to_double() << " : " << b.to_double() << " : " << c.to_double();
 }

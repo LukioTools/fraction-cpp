@@ -23,7 +23,7 @@ public:
     
     template<class...Va>
     requires(std::is_same_v<Va, fraction_t<T>> && ... ) 
-    inline static void sameify(fraction_t<T>& first, Va&...rest){
+    inline static void normalize(fraction_t<T>& first, Va&...rest){
         size_t lcm = first.denominator;
         ((lcm = std::lcm(lcm, rest.denominator)), ...);
         fraction_t<T> lf(lcm, 1);

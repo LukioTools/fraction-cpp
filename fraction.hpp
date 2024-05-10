@@ -32,7 +32,26 @@ public:
         //first.reduce();
         //(rest.reduce(), ...);
     }
-
+    template<typename Tn, class...Va>
+    requires(std::is_same_v<Va, fraction_t<T>> && ... ) 
+    inline static std::vector<Tn> normalize_copy(const fraction_t<T>& first, const Va&...rest){
+        size_t lcm = first.denominator;
+        ((lcm = std::lcm(lcm, rest.denominator)), ...);
+        fraction_t<T> lf(lcm, 1);
+        std::vector<Tn> tn;
+        tn.reserve(sizeof...(rest)+1);
+        tn.push_back((first*lf).template to<Tn>());
+        (
+            [&]{
+                tn.push_back(operator*(rest,lf).template to<Tn>());
+            }(), ...
+        );
+        return tn;
+    }
+    template<class Tn>
+    Tn to(){
+        return Tn(numerator)/Tn(denominator);
+    }
 
     void expand(T t){
         numerator*=t;
